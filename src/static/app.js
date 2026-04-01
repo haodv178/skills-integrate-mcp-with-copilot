@@ -1,8 +1,74 @@
 document.addEventListener("DOMContentLoaded", () => {
   const activitiesList = document.getElementById("activities-list");
   const activitySelect = document.getElementById("activity");
+  const scheduleBlocks = document.getElementById("schedule-blocks");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
+
+  function formatTime(time) {
+    const [hours, minutes] = time.split(":").map(Number);
+    const suffix = hours >= 12 ? "PM" : "AM";
+    const normalizedHours = hours % 12 || 12;
+    return `${normalizedHours}:${String(minutes).padStart(2, "0")} ${suffix}`;
+  }
+
+  function renderTimeSlots(timeSlots) {
+    if (!timeSlots?.length) {
+      return "<p><em>No structured time slots yet</em></p>";
+    }
+
+    return `
+      <div class="time-slots">
+        ${timeSlots
+          .map(
+            (slot) => `
+              <span class="time-slot-pill">
+                ${slot.day} ${formatTime(slot.start_time)} - ${formatTime(slot.end_time)}
+              </span>
+            `
+          )
+          .join("")}
+      </div>
+    `;
+  }
+
+  function renderConflicts(conflicts) {
+    if (!conflicts?.length) {
+      return '<p class="conflict-status ok">No overlapping activities</p>';
+    }
+
+    return `
+      <div class="conflict-status warning">
+        <strong>Conflicts with:</strong> ${conflicts.join(", ")}
+      </div>
+    `;
+  }
+
+  async function fetchScheduleBlocks() {
+    try {
+      const response = await fetch("/schedule/blocks");
+      const blocks = await response.json();
+
+      scheduleBlocks.innerHTML = `
+        <div class="schedule-block-list">
+          ${blocks
+            .map(
+              (block) => `
+                <div class="schedule-block-card">
+                  <h4>${block.name}</h4>
+                  <p>${formatTime(block.start_time)} - ${formatTime(block.end_time)}</p>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+      `;
+    } catch (error) {
+      scheduleBlocks.innerHTML =
+        "<p>Failed to load school day blocks. Please try again later.</p>";
+      console.error("Error fetching school day blocks:", error);
+    }
+  }
 
   // Function to fetch activities from API
   async function fetchActivities() {
@@ -12,14 +78,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Clear loading message
       activitiesList.innerHTML = "";
+      activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
 
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
         const activityCard = document.createElement("div");
         activityCard.className = "activity-card";
-
-        const spotsLeft =
-          details.max_participants - details.participants.length;
 
         // Create participants HTML with delete icons instead of bullet points
         const participantsHTML =
@@ -41,7 +105,10 @@ document.addEventListener("DOMContentLoaded", () => {
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          <p><strong>Structured Time Slots:</strong></p>
+          ${renderTimeSlots(details.time_slots)}
+          <p><strong>Availability:</strong> ${details.availability} (${details.spots_left} spots left)</p>
+          ${renderConflicts(details.conflicts_with)}
           <div class="participants-container">
             ${participantsHTML}
           </div>
@@ -156,5 +223,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Initialize app
+  fetchScheduleBlocks();
   fetchActivities();
 });

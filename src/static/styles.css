@@ -37,7 +37,7 @@ main {
 
 @media (min-width: 768px) {
   main {
-    grid-template-columns: 2fr 1fr;
+    align-items: flex-start;
   }
 }
 
@@ -57,6 +57,28 @@ section h3 {
   color: #1a237e;
 }
 
+#schedule-container {
+  max-width: 1030px;
+}
+
+.schedule-block-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.schedule-block-card {
+  padding: 12px;
+  border: 1px solid #d9e2ff;
+  border-radius: 5px;
+  background-color: #f4f7ff;
+}
+
+.schedule-block-card h4 {
+  margin-bottom: 6px;
+  color: #1a237e;
+}
+
 .activity-card {
   margin-bottom: 15px;
   padding: 15px;
@@ -72,6 +94,38 @@ section h3 {
 
 .activity-card p {
   margin-bottom: 8px;
+}
+
+.time-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.time-slot-pill {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: #e8eaf6;
+  color: #1a237e;
+  font-size: 14px;
+}
+
+.conflict-status {
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border-radius: 4px;
+}
+
+.conflict-status.ok {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.conflict-status.warning {
+  background-color: #fff8e1;
+  color: #8d6e00;
 }
 
 /* New styles for participants section */
